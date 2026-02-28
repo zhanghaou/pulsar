@@ -2339,6 +2339,92 @@ public class AdminApiTest extends MockedPulsarServiceBaseTest {
                 new ArrayList<>());
     }
 
+    @Test(dataProvider = "bundling")
+    public void testUnsubscribeNamespaceBundleOnUnloadedBundle(Integer numBundles) throws Exception {
+        String namespace = "prop-xyz/ns-unsub-bundle";
+        admin.namespaces().createNamespace(namespace, numBundles);
+
+        String topic = "persistent://" + namespace + "/t1";
+        String subscription = "sub1";
+        String otherSubscription = "sub2";
+
+        Consumer<byte[]> consumer1 = pulsarClient.newConsumer()
+                .topic(topic)
+                .subscriptionName(subscription)
+                .subscribe();
+
+        Consumer<byte[]> consumer2 = pulsarClient.newConsumer()
+                .topic(topic)
+                .subscriptionName(otherSubscription)
+                .subscribe();
+
+        consumer1.close();
+        consumer2.close();
+
+        NamespaceBundle bundle =
+                pulsar.getNamespaceService().getNamespaceBundleFactory().getBundle(TopicName.get(topic));
+        admin.namespaces().unloadNamespaceBundle(namespace, bundle.getBundleRange());
+
+        Awaitility.await()
+                .atMost(30, TimeUnit.SECONDS)
+                .pollInterval(200, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertFalse(pulsar.getNamespaceService().isServiceUnitOwned(bundle),
+                            "Bundle should not be owned by current broker");
+                    assertFalse(otherPulsar.getNamespaceService().isServiceUnitOwned(bundle),
+                            "Bundle should not be owned by other broker");
+                });
+
+        admin.namespaces().unsubscribeNamespaceBundle(namespace, bundle.getBundleRange(), subscription);
+
+        List<String> subscriptions =
+                admin.topics().getSubscriptions(topic).stream().sorted().toList();
+        assertEquals(subscriptions, List.of(otherSubscription));
+    }
+
+    @Test(dataProvider = "bundling")
+    public void testUnsubscribeNamespaceOnUnloadedBundle(Integer numBundles) throws Exception {
+        String namespace = "prop-xyz/ns-unsub-namespace";
+        admin.namespaces().createNamespace(namespace, numBundles);
+
+        String topic = "persistent://" + namespace + "/t1";
+        String subscription = "sub1";
+        String otherSubscription = "sub2";
+
+        Consumer<byte[]> consumer1 = pulsarClient.newConsumer()
+                .topic(topic)
+                .subscriptionName(subscription)
+                .subscribe();
+
+        Consumer<byte[]> consumer2 = pulsarClient.newConsumer()
+                .topic(topic)
+                .subscriptionName(otherSubscription)
+                .subscribe();
+
+        consumer1.close();
+        consumer2.close();
+
+        NamespaceBundle bundle =
+                pulsar.getNamespaceService().getNamespaceBundleFactory().getBundle(TopicName.get(topic));
+        admin.namespaces().unloadNamespaceBundle(namespace, bundle.getBundleRange());
+
+        Awaitility.await()
+                .atMost(30, TimeUnit.SECONDS)
+                .pollInterval(200, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertFalse(pulsar.getNamespaceService().isServiceUnitOwned(bundle),
+                            "Bundle should not be owned by current broker");
+                    assertFalse(otherPulsar.getNamespaceService().isServiceUnitOwned(bundle),
+                            "Bundle should not be owned by other broker");
+                });
+
+        admin.namespaces().unsubscribeNamespace(namespace, subscription);
+
+        List<String> subscriptions =
+                admin.topics().getSubscriptions(topic).stream().sorted().toList();
+        assertEquals(subscriptions, List.of(otherSubscription));
+    }
+
     private List<MessageId> publishMessagesOnPersistentTopic(String topicName, int messages) throws Exception {
         return publishMessagesOnPersistentTopic(topicName, messages, 0, false);
     }
