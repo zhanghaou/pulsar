@@ -1905,7 +1905,7 @@ public abstract class NamespacesBase extends AdminResource {
                     new RestException(Status.PRECONDITION_FAILED, "Cannot unsubscribe a replication cursor"));
         }
 
-        return pulsar().getNamespaceService().getListOfPersistentTopics(nsName)
+        return pulsar().getNamespaceService().getFullListOfTopics(nsName)
                 .thenCompose(topicsInNamespace -> {
                     List<CompletableFuture<Void>> futures = new ArrayList<>();
                     NamespaceBundleFactory bundleFactory =
