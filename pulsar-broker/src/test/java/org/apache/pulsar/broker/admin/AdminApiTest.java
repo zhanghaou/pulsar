@@ -2339,7 +2339,7 @@ public class AdminApiTest extends MockedPulsarServiceBaseTest {
                 new ArrayList<>());
     }
 
-    @Test(dataProvider = "bundling")
+    @Test(dataProvider = "numBundles")
     public void testUnsubscribeNamespaceBundleOnUnloadedBundle(Integer numBundles) throws Exception {
         String namespace = "prop-xyz/ns-unsub-bundle";
         admin.namespaces().createNamespace(namespace, numBundles);
@@ -2382,7 +2382,7 @@ public class AdminApiTest extends MockedPulsarServiceBaseTest {
         assertEquals(subscriptions, List.of(otherSubscription));
     }
 
-    @Test(dataProvider = "bundling")
+    @Test(dataProvider = "numBundles")
     public void testUnsubscribeNamespaceOnUnloadedBundle(Integer numBundles) throws Exception {
         String namespace = "prop-xyz/ns-unsub-namespace";
         admin.namespaces().createNamespace(namespace, numBundles);
