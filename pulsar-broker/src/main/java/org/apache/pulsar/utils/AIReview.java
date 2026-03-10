@@ -19,23 +19,18 @@
 package org.apache.pulsar.utils;
 
 import java.util.concurrent.CompletableFuture;
+import lombok.extern.slf4j.Slf4j;
 
-public class AIReviewTest {
+@Slf4j
+public class AIReview {
 
-    public CompletableFuture<Void> create1Async(String topic) {
+    public CompletableFuture<Void> createAsync(String topic) {
         if (topic == null) {
             throw new IllegalArgumentException("topic is null");
         }
         return CompletableFuture.completedFuture(null);
     }
 
-    public CompletableFuture<Void> create2Async(String topic) {
-        return CompletableFuture.completedFuture(topic)
-                .thenRun(() -> {
-                    if (topic == null) {
-                        throw new IllegalArgumentException("topic is null");
-                    }
-                });
-    }
+
 
 }
