@@ -21,7 +21,6 @@ package org.apache.pulsar.utils;
 import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class AIReview {
 
     public CompletableFuture<Void> createAsync(String topic) {
@@ -30,7 +29,5 @@ public class AIReview {
         }
         return CompletableFuture.completedFuture(null);
     }
-
-
 
 }
