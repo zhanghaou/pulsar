@@ -16,18 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.pulsar.utils;
+package org.apache.pulsar.tests;
 
+import static org.junit.Assert.assertThrows;
 import java.util.concurrent.CompletableFuture;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Test;
 
-public class AIReview {
+public class AIReviewTest {
 
     public CompletableFuture<Void> createAsync(String topic) {
-        if (topic == null) {
-            throw new IllegalArgumentException("topic is null");
+        if (StringUtils.isEmpty(topic)) {
+            throw new IllegalArgumentException("topic is null or blank");
         }
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Test
+    public void test1() {
+        CompletableFuture<Void> future = createAsync("persistent://public/default/test-topic")
+                .thenCompose(ignored -> {
+                    throw new IllegalStateException("exception in thenCompose");
+                });
+        assertThrows(RuntimeException.class, future::join);
     }
 
 }
